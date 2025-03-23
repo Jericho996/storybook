@@ -421,5 +421,24 @@
       observer.observe(section);
     });
   </script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+function makePayment() {
+    var options = {
+        "key": "YOUR_RAZORPAY_KEY",
+        "amount": 29900, // Rs. 299
+        "currency": "INR",
+        "name": "Personalized Storybook",
+        "description": "Buy a custom storybook",
+        "handler": function (response){
+            alert("Payment successful! Storybook will be generated.");
+            generateStory(); // Call API to create book
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+}
+</script>
+<button onclick="makePayment()">Buy Now</button>
 </body>
 </html>
