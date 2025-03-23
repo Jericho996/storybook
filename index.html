@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create a magical personalized storybook for your child. Choose short or long books based on age, interests, and picture.">
+  <meta name="keywords" content="personalized storybook, children's book, custom book, kids gift">
+  <meta name="author" content="Your Brand Name">
+  <title>Personalized Children's Storybooks</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333; /* Default text color for light mode */
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background-color: #1a1a1a;
+      color: #f9f9f9; /* Text color for dark mode */
+    }
+    h1, h2, h3 {
+      margin: 0;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 60px 20px;
+      background: url('https://via.placeholder.com/1500x800') no-repeat center/cover;
+      color: black; /* Header text color in light mode */
+    }
+    body.dark-mode header {
+      color: white; /* Header text color in dark mode */
+    }
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    header p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    header button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background: #ff6f61;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    /* Sections */
+    section {
+      padding: 40px 20px;
+      text-align: center;
+      opacity: 0; /* Initially hidden for fade-in effect */
+      transform: translateY(20px); /* Slightly move sections down */
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .benefits, .pricing, .testimonials, .faq, .registration, .downloads, .social-media, .storybook-form {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Benefits Grid */
+    .benefits-grid, .testimonials-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      text-align: left;
+    }
+    .benefits-grid div, .testimonials-grid div {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s, transform 0.3s;
+      color: #333; /* Text color for light mode */
+    }
+    body.dark-mode .benefits-grid div,
+    body.dark-mode .testimonials-grid div {
+      background: #333; /* Background color for dark mode */
+      color: #f9f9f9; /* Text color for dark mode */
+    }
+    .benefits-grid div:hover, .testimonials-grid div:hover {
+      background-color: #f1f1f1;
+      transform: translateY(-5px);
+    }
+    body.dark-mode .benefits-grid div:hover,
+    body.dark-mode .testimonials-grid div:hover {
+      background-color: #444; /* Hover background color for dark mode */
+    }
+
+    /* Pricing */
+    .pricing div {
+      margin: 20px 0;
+    }
+    .pricing button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background: #ff6f61;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    /* Form */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    form input, form select, form button, form textarea {
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    form button {
+      background: #ff6f61;
+      color: white;
+      border: none;
+    }
+
+    /* Registration Section */
+    .registration {
+      background: rgba(255, 111, 97, 0.1);
+      padding: 40px 20px;
+      border-radius: 10px;
+    }
+    .registration h2 {
+      margin-bottom: 20px;
+    }
+
+    /* Downloads Section */
+    .downloads {
+      background: rgba(255, 111, 97, 0.1);
+      padding: 40px 20px;
+      border-radius: 10px;
+    }
+    .downloads h2 {
+      margin-bottom: 20px;
+    }
+    .downloads a {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background: #ff6f61;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+
+    /* Social Media Icons */
+    .social-media {
+      margin-top: 40px;
+    }
+    .social-media a {
+      margin: 0 10px;
+      font-size: 24px;
+      color: #333;
+      transition: color 0.3s;
+    }
+    body.dark-mode .social-media a {
+      color: #f9f9f9;
+    }
+    .social-media a:hover {
+      color: #ff6f61;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #333;
+      color: white;
+    }
+    footer a {
+      color: #ff6f61;
+    }
+
+    /* Dark Mode Toggle */
+    .dark-mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 50%;
+    }
+    .dark-mode-toggle.dark {
+      background: #f9f9f9;
+      color: #333;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      header p {
+        font-size: 1rem;
+      }
+      .benefits-grid, .testimonials-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1>Create a Magical Storybook for Your Child</h1>
+    <p>Personalized stories based on your child’s age, interests, and picture. Choose short or long books!</p>
+    <button onclick="scrollToForm()">Create Your Storybook Now</button>
+  </header>
+
+  <!-- Benefits -->
+  <section class="benefits">
+    <h2>Why Choose Us?</h2>
+    <div class="benefits-grid">
+      <div>
+        <h3>Tailored to Your Child’s Interests</h3>
+        <p>Stories that match your child’s unique personality.</p>
+      </div>
+      <div>
+        <h3>Encourages Reading and Creativity</h3>
+        <p>Inspire a love for reading with engaging tales.</p>
+      </div>
+      <div>
+        <h3>Perfect Gift from Chachu, Bua, and More!</h3>
+        <p>Surprise your loved ones with a unique and thoughtful gift.</p>
+      </div>
+      <div>
+        <h3>Fast Delivery & Easy Payment</h3>
+        <p>Get your book quickly with secure payment options.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="pricing">
+    <h2>Pricing</h2>
+    <div>
+      <h3>Short Book</h3>
+      <p>₹199 - 10 pages</p>
+      <button>Order Now</button>
+    </div>
+    <div>
+      <h3>Long Book</h3>
+      <p>₹299 - 20 pages</p>
+      <button>Order Now</button>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <h2>What Parents Say</h2>
+    <div class="testimonials-grid">
+      <div>
+        <p>"My child loves their personalized book! It’s become their favorite bedtime story."</p>
+        <p>- Priya M., Mumbai</p>
+      </div>
+      <div>
+        <p>"The quality is amazing, and the story is so unique. Highly recommend!"</p>
+        <p>- Anjali R., Pune</p>
+      </div>
+      <div>
+        <p>"A perfect gift for my niece. She couldn’t stop smiling!"</p>
+        <p>- Ravi K., Hyderabad</p>
+      </div>
+      <div>
+        <p>"The personalized touch made it so special for my daughter. Thank you!"</p>
+        <p>- Sneha P., Delhi</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <h2>FAQ</h2>
+    <div>
+      <h3>How long does it take to create a book?</h3>
+      <p>It takes 3-5 business days to create and ship your book.</p>
+    </div>
+    <div>
+      <h3>Can I preview the book before buying?</h3>
+      <p>Yes, you’ll receive a digital preview before payment.</p>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section class="downloads">
+    <h2>Download Sample Storybooks</h2>
+    <p>Explore our collection of downloadable storybooks:</p>
+    <a href="sample-storybook-1.pdf" download>Download Storybook 1</a>
+    <a href="sample-storybook-2.pdf" download>Download Storybook 2</a>
+  </section>
+
+  <!-- Create Your Storybook -->
+  <section class="storybook-form">
+    <h2>Create Your Storybook</h2>
+    <form id="storybook-form">
+      <input type="text" placeholder="Child's Name" required>
+      <input type="number" placeholder="Child's Age" required>
+      <select required>
+        <option value="" disabled selected>Select Interests</option>
+        <option value="animals">Animals</option>
+        <option value="space">Space</option>
+        <option value="princesses">Princesses</option>
+        <option value="superheroes">Superheroes</option>
+      </select>
+      <input type="file" accept="image/*">
+      <select required>
+        <option value="" disabled selected>Book Length</option>
+        <option value="short">Short Book</option>
+        <option value="long">Long Book</option>
+      </select>
+      <select required>
+        <option value="" disabled selected>Select Format</option>
+        <option value="ebook">E-book</option>
+        <option value="physical">Physical Copy (Coming Soon)</option>
+      </select>
+      <textarea placeholder="Any special comments or requests?"></textarea>
+      <button type="submit">Preview Your Storybook</button>
+    </form>
+  </section>
+
+  <!-- Registration -->
+  <section class="registration">
+    <h2>Register to Get Started</h2>
+    <form id="registration-form">
+      <input type="text" placeholder="Full Name" required>
+      <input type="email" placeholder="Email Address" required>
+      <input type="password" placeholder="Create a Password" required>
+      <button type="submit">Register</button>
+      <p>Already have an account? <a href="#">Login here</a></p>
+    </form>
+  </section>
+
+  <!-- Social Media -->
+  <section class="social-media">
+    <h2>Follow Us</h2>
+    <div>
+      <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+      <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+      <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2023 Your Brand Name. <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+  </footer>
+
+  <!-- Dark Mode Toggle -->
+  <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+
+  <script>
+    // Smooth Scroll
+    function scrollToForm() {
+      document.querySelector('.storybook-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Dark Mode Toggle
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const toggleButton = document.querySelector('.dark-mode-toggle');
+      toggleButton.classList.toggle('dark');
+    }
+
+    // Form Submission
+    document.getElementById('storybook-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Thank you! Your storybook is being created.');
+    });
+
+    // Registration Form Submission
+    document.getElementById('registration-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Thank you for registering!');
+    });
+
+    // Fade-In Effect on Scroll
+    const sections = document.querySelectorAll('section');
+    const options = {
+      threshold: 0.1,
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, options);
+
+    sections.forEach((section) => {
+      observer.observe(section);
+    });
+  </script>
+</body>
+</html>
