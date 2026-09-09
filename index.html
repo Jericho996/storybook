@@ -468,6 +468,19 @@ function makePayment() {
   var lengthSelect = selects[1];
   var commentsBox = section.querySelector('textarea');
 
+  // Auto-insert email field (matches your form's styling)
+  var emailInput = section.querySelector('input[data-sb-email]');
+  if (!emailInput) {
+    emailInput = document.createElement('input');
+    emailInput.type = 'email';
+    emailInput.setAttribute('data-sb-email', '1');
+    emailInput.placeholder = "Parent's Email (book will be emailed to you)";
+    if (nameInput) { emailInput.className = nameInput.className; emailInput.style.cssText = nameInput.style.cssText; }
+    var anchor = ageInput || nameInput || fileInput;
+    if (anchor) anchor.insertAdjacentElement('afterend', emailInput);
+    else previewBtn.parentNode.insertBefore(emailInput, previewBtn);
+  }
+
   var status = document.createElement('div');
   status.style.cssText = 'margin:15px 0;padding:15px;border-radius:8px;display:none;text-align:center;font-weight:600;';
   previewBtn.parentNode.insertBefore(status, previewBtn);
@@ -509,6 +522,8 @@ function makePayment() {
     if (interestSelect) interest = interestSelect.value || (interestSelect.selectedIndex >= 0 ? interestSelect.options[interestSelect.selectedIndex].text : '');
     if (!childName) { alert("Please enter your child's name!"); return; }
     if (!interest || interest === 'Select Interests') { alert('Please select an interest!'); return; }
+    var email = emailInput.value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email address (or leave it empty).'); return; }
     var age = ageInput ? ageInput.value.trim() : '';
     var theme = interest + (age ? ' (the child is ' + age + ' years old)' : '');
     var bookLength = lengthSelect ? (lengthSelect.value || (lengthSelect.selectedIndex >= 0 ? lengthSelect.options[lengthSelect.selectedIndex].text : 'Short Book')) : 'Short Book';
@@ -516,7 +531,7 @@ function makePayment() {
     var isLong = bookLength.toLowerCase().indexOf('long') === 0;
 
     previewBtn.disabled = true;
-    show('wait', '✨ Crafting ' + childName + "'s keepsake storybook...<br>This takes " + (isLong ? '4–6' : '2–3') + " minutes. Please keep this page open.");
+    show('wait', '✨ Crafting ' + childName + "'s keepsake storybook...<br>This takes " + (isLong ? '4–6' : '2–3') + " minutes." + (email ? ' We will also email it to you.' : '') + " Please keep this page open.");
 
     var photoPromise = (fileInput && fileInput.files && fileInput.files[0]) ? readPhotoResized(fileInput.files[0]) : Promise.resolve('');
 
@@ -524,14 +539,14 @@ function makePayment() {
       return fetch('https://storybook-backend-85eh.onrender.com/api/create-book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ childName: childName, theme: theme, photoUrl: '', photoData: photoData, bookLength: bookLength, dedication: dedication })
+        body: JSON.stringify({ childName: childName, theme: theme, photoUrl: '', photoData: photoData, bookLength: bookLength, dedication: dedication, email: email })
       });
     })
     .then(function (r) { return r.json(); })
     .then(function (result) {
       previewBtn.disabled = false;
       if (result && result.success && result.pdfUrl) {
-        show('ok', '🎉 <strong>' + childName + "'s storybook is ready!</strong><br><a href='" + result.pdfUrl + "' target='_blank' style='display:inline-block;margin-top:10px;padding:10px 22px;background:#28a745;color:#fff;border-radius:6px;text-decoration:none;'>📥 Download / View Book</a>");
+        show('ok', '🎉 <strong>' + childName + "'s storybook is ready!</strong>" + (email ? '<br>📧 Also sent to ' + email : '') + "<br><a href='" + result.pdfUrl + "' target='_blank' style='display:inline-block;margin-top:10px;padding:10px 22px;background:#28a745;color:#fff;border-radius:6px;text-decoration:none;'>📥 Download / View Book</a>");
       } else {
         show('err', '❌ Something went wrong: ' + ((result && result.error) || 'Unknown error') + '<br>Please try again.');
       }
