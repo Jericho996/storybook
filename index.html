@@ -463,7 +463,10 @@ function makePayment() {
       if (inputs[j].type !== 'file' && inputs[j].type !== 'hidden') { nameInput = inputs[j]; break; }
     }
   }
-  var interestSelect = section.querySelectorAll('select')[0];
+  var selects = section.querySelectorAll('select');
+  var interestSelect = selects[0];
+  var lengthSelect = selects[1];
+  var commentsBox = section.querySelector('textarea');
 
   var status = document.createElement('div');
   status.style.cssText = 'margin:15px 0;padding:15px;border-radius:8px;display:none;text-align:center;font-weight:600;';
@@ -508,9 +511,12 @@ function makePayment() {
     if (!interest || interest === 'Select Interests') { alert('Please select an interest!'); return; }
     var age = ageInput ? ageInput.value.trim() : '';
     var theme = interest + (age ? ' (the child is ' + age + ' years old)' : '');
+    var bookLength = lengthSelect ? (lengthSelect.value || (lengthSelect.selectedIndex >= 0 ? lengthSelect.options[lengthSelect.selectedIndex].text : 'Short Book')) : 'Short Book';
+    var dedication = commentsBox ? commentsBox.value.trim() : '';
+    var isLong = bookLength.toLowerCase().indexOf('long') === 0;
 
     previewBtn.disabled = true;
-    show('wait', '✨ Creating ' + childName + "'s personalized storybook...<br>This takes 2–4 minutes. Please keep this page open.");
+    show('wait', '✨ Crafting ' + childName + "'s keepsake storybook...<br>This takes " + (isLong ? '4–6' : '2–3') + " minutes. Please keep this page open.");
 
     var photoPromise = (fileInput && fileInput.files && fileInput.files[0]) ? readPhotoResized(fileInput.files[0]) : Promise.resolve('');
 
@@ -518,7 +524,7 @@ function makePayment() {
       return fetch('https://storybook-backend-85eh.onrender.com/api/create-book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ childName: childName, theme: theme, photoUrl: '', photoData: photoData })
+        body: JSON.stringify({ childName: childName, theme: theme, photoUrl: '', photoData: photoData, bookLength: bookLength, dedication: dedication })
       });
     })
     .then(function (r) { return r.json(); })
