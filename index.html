@@ -441,29 +441,22 @@ function makePayment() {
 </script>
 <button onclick="makePayment()">Buy Now</button>
 
-  <script>
+<script>
 (function () {
-  // 1. Find the "Preview Your Storybook" button
   var previewBtn = null;
   var candidates = document.querySelectorAll('button, input[type="submit"], a');
   for (var i = 0; i < candidates.length; i++) {
-    if ((candidates[i].textContent || candidates[i].value || '').indexOf('Preview Your Storybook') !== -1) {
-      previewBtn = candidates[i];
-      break;
-    }
+    if ((candidates[i].textContent || candidates[i].value || '').indexOf('Preview Your Storybook') !== -1) { previewBtn = candidates[i]; break; }
   }
   if (!previewBtn) { console.warn('Preview button not found'); return; }
 
-  // 2. Walk up to the form container that holds the inputs
   var section = previewBtn.parentElement;
-  while (section && section !== document.body && !section.querySelector('input')) {
-    section = section.parentElement;
-  }
+  while (section && section !== document.body && !section.querySelector('input')) { section = section.parentElement; }
   if (!section) section = document;
 
-  // 3. Locate fields (verified against your screenshot layout)
   var nameInput = section.querySelector('input[placeholder*="Name"]');
   var ageInput  = section.querySelector('input[placeholder*="Age"]');
+  var fileInput = section.querySelector('input[type="file"]');
   if (!nameInput) {
     var inputs = section.querySelectorAll('input');
     for (var j = 0; j < inputs.length; j++) {
@@ -472,7 +465,6 @@ function makePayment() {
   }
   var interestSelect = section.querySelectorAll('select')[0];
 
-  // 4. Status box inserted just above the button
   var status = document.createElement('div');
   status.style.cssText = 'margin:15px 0;padding:15px;border-radius:8px;display:none;text-align:center;font-weight:600;';
   previewBtn.parentNode.insertBefore(status, previewBtn);
@@ -485,27 +477,49 @@ function makePayment() {
     status.innerHTML = html;
   }
 
+  function readPhotoResized(file) {
+    return new Promise(function (resolve) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          var max = 768;
+          var scale = Math.min(1, max / Math.max(img.width, img.height));
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = function () { resolve(''); };
+        img.src = reader.result;
+      };
+      reader.onerror = function () { resolve(''); };
+      reader.readAsDataURL(file);
+    });
+  }
+
   previewBtn.addEventListener('click', function (e) {
     e.preventDefault();
-
     var childName = nameInput ? nameInput.value.trim() : '';
     var interest = '';
-    if (interestSelect) {
-      interest = interestSelect.value || (interestSelect.selectedIndex >= 0 ? interestSelect.options[interestSelect.selectedIndex].text : '');
-    }
+    if (interestSelect) interest = interestSelect.value || (interestSelect.selectedIndex >= 0 ? interestSelect.options[interestSelect.selectedIndex].text : '');
     if (!childName) { alert("Please enter your child's name!"); return; }
     if (!interest || interest === 'Select Interests') { alert('Please select an interest!'); return; }
-
     var age = ageInput ? ageInput.value.trim() : '';
     var theme = interest + (age ? ' (the child is ' + age + ' years old)' : '');
 
     previewBtn.disabled = true;
-    show('wait', '✨ AI is writing and illustrating ' + childName + "'s storybook...<br>This usually takes 1–3 minutes. Please keep this page open.");
+    show('wait', '✨ Creating ' + childName + "'s personalized storybook...<br>This takes 2–4 minutes. Please keep this page open.");
 
-    fetch('https://storybook-backend-85eh.onrender.com/api/create-book', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ childName: childName, theme: theme, photoUrl: '' })
+    var photoPromise = (fileInput && fileInput.files && fileInput.files[0]) ? readPhotoResized(fileInput.files[0]) : Promise.resolve('');
+
+    photoPromise.then(function (photoData) {
+      return fetch('https://storybook-backend-85eh.onrender.com/api/create-book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ childName: childName, theme: theme, photoUrl: '', photoData: photoData })
+      });
     })
     .then(function (r) { return r.json(); })
     .then(function (result) {
