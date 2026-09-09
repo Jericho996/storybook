@@ -440,5 +440,88 @@ function makePayment() {
 }
 </script>
 <button onclick="makePayment()">Buy Now</button>
+
+  <script>
+(function () {
+  // 1. Find the "Preview Your Storybook" button
+  var previewBtn = null;
+  var candidates = document.querySelectorAll('button, input[type="submit"], a');
+  for (var i = 0; i < candidates.length; i++) {
+    if ((candidates[i].textContent || candidates[i].value || '').indexOf('Preview Your Storybook') !== -1) {
+      previewBtn = candidates[i];
+      break;
+    }
+  }
+  if (!previewBtn) { console.warn('Preview button not found'); return; }
+
+  // 2. Walk up to the form container that holds the inputs
+  var section = previewBtn.parentElement;
+  while (section && section !== document.body && !section.querySelector('input')) {
+    section = section.parentElement;
+  }
+  if (!section) section = document;
+
+  // 3. Locate fields (verified against your screenshot layout)
+  var nameInput = section.querySelector('input[placeholder*="Name"]');
+  var ageInput  = section.querySelector('input[placeholder*="Age"]');
+  if (!nameInput) {
+    var inputs = section.querySelectorAll('input');
+    for (var j = 0; j < inputs.length; j++) {
+      if (inputs[j].type !== 'file' && inputs[j].type !== 'hidden') { nameInput = inputs[j]; break; }
+    }
+  }
+  var interestSelect = section.querySelectorAll('select')[0];
+
+  // 4. Status box inserted just above the button
+  var status = document.createElement('div');
+  status.style.cssText = 'margin:15px 0;padding:15px;border-radius:8px;display:none;text-align:center;font-weight:600;';
+  previewBtn.parentNode.insertBefore(status, previewBtn);
+
+  function show(type, html) {
+    status.style.display = 'block';
+    if (type === 'wait') { status.style.background = '#fff3cd'; status.style.color = '#856404'; }
+    if (type === 'ok')   { status.style.background = '#d4edda'; status.style.color = '#155724'; }
+    if (type === 'err')  { status.style.background = '#f8d7da'; status.style.color = '#721c24'; }
+    status.innerHTML = html;
+  }
+
+  previewBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    var childName = nameInput ? nameInput.value.trim() : '';
+    var interest = '';
+    if (interestSelect) {
+      interest = interestSelect.value || (interestSelect.selectedIndex >= 0 ? interestSelect.options[interestSelect.selectedIndex].text : '');
+    }
+    if (!childName) { alert("Please enter your child's name!"); return; }
+    if (!interest || interest === 'Select Interests') { alert('Please select an interest!'); return; }
+
+    var age = ageInput ? ageInput.value.trim() : '';
+    var theme = interest + (age ? ' (the child is ' + age + ' years old)' : '');
+
+    previewBtn.disabled = true;
+    show('wait', '✨ AI is writing and illustrating ' + childName + "'s storybook...<br>This usually takes 1–3 minutes. Please keep this page open.");
+
+    fetch('https://storybook-backend-85eh.onrender.com/api/create-book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childName: childName, theme: theme, photoUrl: '' })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (result) {
+      previewBtn.disabled = false;
+      if (result && result.success && result.pdfUrl) {
+        show('ok', '🎉 <strong>' + childName + "'s storybook is ready!</strong><br><a href='" + result.pdfUrl + "' target='_blank' style='display:inline-block;margin-top:10px;padding:10px 22px;background:#28a745;color:#fff;border-radius:6px;text-decoration:none;'>📥 Download / View Book</a>");
+      } else {
+        show('err', '❌ Something went wrong: ' + ((result && result.error) || 'Unknown error') + '<br>Please try again.');
+      }
+    })
+    .catch(function (err) {
+      previewBtn.disabled = false;
+      show('err', '❌ Connection error: ' + err.message + '<br>Please try again in a moment.');
+    });
+  });
+})();
+</script>
 </body>
 </html>
